@@ -1,0 +1,44 @@
+apiVersion: cloud.badmus.test/v1
+kind: EC2Instance
+metadata:
+  name: ec2instance-sample
+  namespace: default
+spec:
+  # Name of the EC2 instance
+  name: my-ec2-instance
+
+  # AMI ID to use for the instance
+  amiId: ami-0c55b159cbfafe1f0
+
+  # Instance type (e.g., t2.micro, t3.medium)
+  instanceType: t2.micro
+
+  # SSH key pair name for instance access
+  keyName: my-key-pair
+
+  # Security group IDs to attach to the instance
+  securityGroupIds:
+    - sg-0123456789abcdef0
+    - sg-0987654321fedcba0
+
+  # Subnet ID where the instance will be launched
+  subnetId: subnet-0123456789abcdef0
+
+  # Primary storage configuration
+  storage:
+    - volumeType: gp3
+      volumeSize: 30
+
+  # Additional storage volumes (optional)
+  additionalStorage:
+    - volumeType: gp3
+      volumeSize: 100
+    - volumeType: io2
+      volumeSize: 50
+
+  # Tags to apply to the EC2 instance
+  tags:
+    Environment: development
+    Project: kube-operator
+    ManagedBy: kubernetes
+    Owner: badmus
