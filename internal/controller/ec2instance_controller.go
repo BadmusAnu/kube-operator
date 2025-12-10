@@ -92,16 +92,30 @@ func (r *EC2InstanceReconciler) Reconcile(ctx context.Context, req ctrl.Request)
 		return ctrl.Result{}, nil
 	}
 
-	// l.Info("=== DRIFT DETECTION STARTED ===")
+	l.Info("=== DRIFT DETECTION STARTED ===")
 
-	// // if instance exists, but state is not running, leave it as is, but update the status
-	// if ec2Instance.Status.InstanceID != "" {
-	// 	l.Info("Instance already exists. No new instance will be created", "Name", ec2Instance.Spec.Name)
-	// 	return ctrl.Result{}, nil
+	// if instance exists, but state is not running, set to running
+	if ec2Instance.Status.InstanceID != "" {
+		l.Info("Instance already exists. No new instance will be created", "Name", ec2Instance.Spec.Name)
+		return ctrl.Result{}, nil
+	}
 
-	// 	// update the instance status
+	checkOutput, err := InstanceCheck(ctx, ec2Instance)
+	if err != nil {
+		l.Error(err, "Failed to check instance")
+		return ctrl.Result{}, err
+	}
 
-	// }
+	// if instance exists but state is not running, restart instance
+	if checkOutput != "running" {
+		l.Info("Instance is not running. Restarting...", "Name", ec2Instance.Spec.Name)
+		err = restartEc2Instance(ctx, ec2Instance)
+		if err != nil {
+			l.Error(err, "Failed to restart instance")
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{}, nil
+	}
 
 	l.Info("Instance does not exist. Creating...", "Name", ec2Instance.Spec.Name)
 
